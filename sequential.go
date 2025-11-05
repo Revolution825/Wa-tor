@@ -18,6 +18,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"log"
 	"math/rand/v2"
@@ -25,9 +26,9 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-const scale = 5
-const width = 800
-const height = 800
+const scale = 1
+const width = 400
+const height = 400
 
 var blue color.Color = color.RGBA{69, 145, 196, 255}
 var yellow color.Color = color.RGBA{255, 230, 120, 255}
@@ -55,7 +56,7 @@ func frame(window *ebiten.Image) error {
 	count++
 	var err error = nil
 
-	if count == 100 {
+	if count == 1 {
 		err = update()
 		count = 0
 	}
@@ -70,31 +71,31 @@ func update() error {
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			buffer[x][y].typeId = 0
-		}
-	}
-
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
 			if grid[x][y].typeId == 1 { // if fish
 				freeSquares := [][2]int{} // array of free square coordinates
-				if y > 0 && grid[x][y-1].typeId == 0 {
+				if y > 0 && grid[x][y-1].typeId == 0 && buffer[x][y-1].typeId == 0 {
 					freeSquares = append(freeSquares, [2]int{x, y - 1})
 				}
-				if x > 0 && grid[x-1][y].typeId == 0 {
+				if x > 0 && grid[x-1][y].typeId == 0 && buffer[x-1][y].typeId == 0 {
 					freeSquares = append(freeSquares, [2]int{x - 1, y})
 				}
-				if x < width-1 && grid[x+1][y].typeId == 0 {
+				if x < width-1 && grid[x+1][y].typeId == 0 && buffer[x+1][y].typeId == 0 {
 					freeSquares = append(freeSquares, [2]int{x + 1, y})
 				}
-				if y < height-1 && grid[x][y+1].typeId == 0 {
+				if y < height-1 && grid[x][y+1].typeId == 0 && buffer[x][y+1].typeId == 0 {
 					freeSquares = append(freeSquares, [2]int{x, y + 1})
 				}
 				if len(freeSquares) == 0 { // If there are no free squares, stay put
 					buffer[x][y].typeId = grid[x][y].typeId
 				} else { // If there are free squares, move to one at random
 					newPosition := rand.IntN(len(freeSquares))
-					buffer[freeSquares[newPosition][0]][freeSquares[newPosition][1]].typeId = 1
+					newX := freeSquares[newPosition][0]
+					newY := freeSquares[newPosition][1]
+					if buffer[newX][newY].typeId == 0 {
+						buffer[newX][newY].typeId = 1
+					} else {
+						buffer[x][y].typeId = grid[x][y].typeId
+					}
 				}
 
 			} else if grid[x][y].typeId == 2 { // if shark
@@ -103,10 +104,29 @@ func update() error {
 		}
 	}
 
+	count := 0
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			if grid[x][y].typeId == 1 {
+				count++
+			}
+		}
+	}
+
+	fmt.Println("Fish count:", count)
+
 	chronon++
 	temp := buffer
 	buffer = grid
 	grid = temp
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			buffer[x][y].typeId = 0
+		}
+	}
+
 	return nil
 }
 
