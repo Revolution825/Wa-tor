@@ -18,7 +18,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"log"
 	"math/rand/v2"
@@ -26,7 +25,7 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-const scale = 1
+const scale = 5
 const width = 400
 const height = 400
 
@@ -72,18 +71,22 @@ func update() error {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 			if grid[x][y].typeId == 1 { // if fish
-				freeSquares := [][2]int{} // array of free square coordinates
-				if y > 0 && grid[x][y-1].typeId == 0 && buffer[x][y-1].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x, y - 1})
+				freeSquares := [][2]int{}        // array of free square coordinates
+				leftX := (x - 1 + width) % width // wrap around
+				rightX := (x + 1) % width
+				upY := (y - 1 + height) % height
+				downY := (y + 1) % height
+				if grid[x][upY].typeId == 0 && buffer[x][upY].typeId == 0 {
+					freeSquares = append(freeSquares, [2]int{x, upY})
 				}
-				if x > 0 && grid[x-1][y].typeId == 0 && buffer[x-1][y].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x - 1, y})
+				if grid[leftX][y].typeId == 0 && buffer[leftX][y].typeId == 0 {
+					freeSquares = append(freeSquares, [2]int{leftX, y})
 				}
-				if x < width-1 && grid[x+1][y].typeId == 0 && buffer[x+1][y].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x + 1, y})
+				if grid[rightX][y].typeId == 0 && buffer[rightX][y].typeId == 0 {
+					freeSquares = append(freeSquares, [2]int{rightX, y})
 				}
-				if y < height-1 && grid[x][y+1].typeId == 0 && buffer[x][y+1].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x, y + 1})
+				if grid[x][downY].typeId == 0 && buffer[x][downY].typeId == 0 {
+					freeSquares = append(freeSquares, [2]int{x, downY})
 				}
 				if len(freeSquares) == 0 { // If there are no free squares, stay put
 					buffer[x][y].typeId = grid[x][y].typeId
@@ -103,18 +106,6 @@ func update() error {
 			}
 		}
 	}
-
-	count := 0
-
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			if grid[x][y].typeId == 1 {
-				count++
-			}
-		}
-	}
-
-	fmt.Println("Fish count:", count)
 
 	chronon++
 	temp := buffer
