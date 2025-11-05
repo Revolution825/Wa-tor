@@ -44,11 +44,11 @@ var grid [width][height]square = [width][height]square{}
 var threads int = 4
 
 type square struct {
-	typeId int // 0 = empty space, 1 = fish, 2 = shark
-	energy int
+	typeId     int // 0 = empty space, 1 = fish, 2 = shark
+	energy     int
+	breedTimer int
 }
 
-var breedTimer int
 var chronon int = 1
 
 func frame(window *ebiten.Image) error {
@@ -96,8 +96,16 @@ func update() error {
 					newY := freeSquares[newPosition][1]
 					if buffer[newX][newY].typeId == 0 {
 						buffer[newX][newY].typeId = 1
+						if grid[x][y].breedTimer <= 0 {
+							buffer[x][y].typeId = 1
+							buffer[x][y].breedTimer = fishBreed
+							buffer[newX][newY].breedTimer = fishBreed
+						} else {
+							buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1
+						}
 					} else {
 						buffer[x][y].typeId = grid[x][y].typeId
+						buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
 					}
 				}
 
@@ -147,8 +155,9 @@ func main() {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 			// Float32() returns a random floating point number between 0.0 and 1.0
-			if rand.Float32() < 0.333 {
+			if rand.Float32() < 0.1 {
 				grid[x][y].typeId = 1
+				grid[x][y].breedTimer = fishBreed
 			} else if rand.Float32() < 0.5 {
 				grid[x][y].typeId = 2
 			} else {
