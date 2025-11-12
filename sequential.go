@@ -35,11 +35,12 @@ var red color.Color = color.RGBA{255, 50, 50, 255}
 var buffer [width][height]square = [width][height]square{}
 var count int = 0
 
-var numShark int = 0
-var numFish int = 0
-var fishBreed int = 3
-var sharkBreed int = 6
+var numShark int = 100000
+var numFish int = 200000
+var fishBreed int = 5
+var sharkBreed int = 8
 var starve int = 5
+var energyGain = 4
 var grid [width][height]square = [width][height]square{}
 var threads int = 4
 
@@ -55,7 +56,7 @@ func frame(window *ebiten.Image) error {
 	count++
 	var err error = nil
 
-	if count == 50 {
+	if count == 5 {
 		err = update()
 		count = 0
 	}
@@ -66,144 +67,160 @@ func frame(window *ebiten.Image) error {
 	return err
 }
 
-func update() error {
+func gatherFreeSquares(x int, y int) [][2]int {
+	freeSquares := [][2]int{}
+	leftX := (x - 1 + width) % width // wrap around
+	rightX := (x + 1) % width
+	upY := (y - 1 + height) % height
+	downY := (y + 1) % height
+	if grid[x][upY].typeId == 0 {
+		freeSquares = append(freeSquares, [2]int{x, upY})
+	}
+	if grid[leftX][y].typeId == 0 {
+		freeSquares = append(freeSquares, [2]int{leftX, y})
+	}
+	if grid[rightX][y].typeId == 0 {
+		freeSquares = append(freeSquares, [2]int{rightX, y})
+	}
+	if grid[x][downY].typeId == 0 {
+		freeSquares = append(freeSquares, [2]int{x, downY})
+	}
+	return freeSquares
+}
 
+func gatherFishSquares(x int, y int) [][2]int {
+	fishSquares := [][2]int{}
+	leftX := (x - 1 + width) % width
+	rightX := (x + 1) % width
+	upY := (y - 1 + height) % height
+	downY := (y + 1) % height
+	if grid[x][upY].typeId == 1 {
+		fishSquares = append(fishSquares, [2]int{x, upY})
+	}
+	if grid[leftX][y].typeId == 1 {
+		fishSquares = append(fishSquares, [2]int{leftX, y})
+	}
+	if grid[rightX][y].typeId == 1 {
+		fishSquares = append(fishSquares, [2]int{rightX, y})
+	}
+	if grid[x][downY].typeId == 1 {
+		fishSquares = append(fishSquares, [2]int{x, downY})
+	}
+	return fishSquares
+}
+
+func updateFish(x int, y int) error {
+	if buffer[x][y].typeId == 2 {
+		return nil // skip if shark already moved here
+	}
+	freeSquares := gatherFreeSquares(x, y)
+	newX, newY := x, y // Initialize newX and newY
+	// If there are adjacent free squares, pick one at random and move there
+	if len(freeSquares) > 0 {
+		newPosition := rand.IntN(len(freeSquares))
+		newX = freeSquares[newPosition][0]
+		newY = freeSquares[newPosition][1]
+		if buffer[newX][newY].typeId == 0 {
+			buffer[newX][newY].typeId = 1
+			buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1
+		} else {
+			// No free adjacent squares, stay put
+			buffer[x][y].typeId = grid[x][y].typeId
+			buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
+		}
+	} else {
+		// No free adjacent squares, stay put
+		buffer[x][y].typeId = grid[x][y].typeId
+		buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
+	}
+	// Handle breeding
+	if buffer[newX][newY].breedTimer <= 0 {
+		buffer[x][y].typeId = 1
+		buffer[x][y].breedTimer = fishBreed
+		buffer[newX][newY].breedTimer = fishBreed
+	}
+	return nil
+}
+
+func updateSharks(x int, y int) error {
+	freeSquares := gatherFreeSquares(x, y)
+	fishSquares := gatherFishSquares(x, y)
+	newX, newY := x, y // Initialize newX and newY
+	if len(fishSquares) > 0 {
+		// If there are adjacent fish squares, pick one at random and move there
+		newPosition := rand.IntN(len(fishSquares))
+		newX = fishSquares[newPosition][0]
+		newY = fishSquares[newPosition][1]
+		if buffer[newX][newY].typeId != 2 {
+			buffer[newX][newY].typeId = 2
+			buffer[newX][newY].energy = grid[x][y].energy - 1 + energyGain // shark eats fish, gains energy
+			buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1
+		} else if len(freeSquares) > 0 {
+			// if shark can't move to fish square because there's a shark there already in the buffer, try to move to free square
+			newPosition := rand.IntN(len(freeSquares))
+			newX = freeSquares[newPosition][0]
+			newY = freeSquares[newPosition][1]
+			buffer[newX][newY].typeId = 2
+			buffer[newX][newY].energy = grid[x][y].energy - 1 // -1 energy for movement
+			buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1
+		} else {
+			// No free adjacent squares, stay put
+			buffer[x][y].typeId = grid[x][y].typeId
+			buffer[x][y].energy = grid[x][y].energy - 1
+			buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
+			newX = x
+			newY = y
+		}
+	} else if len(freeSquares) > 0 {
+		// if shark can't move to fish square because there's a shark there already in the buffer, try to move to free square
+		newPosition := rand.IntN(len(freeSquares))
+		newX = freeSquares[newPosition][0]
+		newY = freeSquares[newPosition][1]
+		buffer[newX][newY].typeId = 2
+		buffer[newX][newY].energy = grid[x][y].energy - 1 // -1 energy for movement
+		buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1
+	} else {
+		// No free adjacent squares, stay put
+		buffer[x][y].typeId = grid[x][y].typeId
+		buffer[x][y].energy = grid[x][y].energy - 1
+		buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
+	}
+	// Handle starvation
+	if buffer[newX][newY].energy <= 0 {
+		buffer[newX][newY].typeId = 0
+		buffer[newX][newY].energy = 0
+		return nil
+	}
+	// Handle breeding
+	if buffer[newX][newY].breedTimer <= 0 {
+		buffer[x][y].typeId = 2
+		buffer[x][y].energy = starve
+		buffer[x][y].breedTimer = sharkBreed
+		buffer[newX][newY].breedTimer = sharkBreed
+	}
+	return nil
+}
+
+func update() error {
+	numFish = 0
+	numShark = 0
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			if grid[x][y].typeId == 1 { // if fish
-				freeSquares := [][2]int{}        // array of free square coordinates
-				leftX := (x - 1 + width) % width // wrap around
-				rightX := (x + 1) % width
-				upY := (y - 1 + height) % height
-				downY := (y + 1) % height
-				if grid[x][upY].typeId == 0 && buffer[x][upY].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x, upY})
-				}
-				if grid[leftX][y].typeId == 0 && buffer[leftX][y].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{leftX, y})
-				}
-				if grid[rightX][y].typeId == 0 && buffer[rightX][y].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{rightX, y})
-				}
-				if grid[x][downY].typeId == 0 && buffer[x][downY].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x, downY})
-				}
-				if len(freeSquares) == 0 { // If there are no free squares, stay put
-					buffer[x][y].typeId = grid[x][y].typeId
-					buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
-				} else { // If there are free squares, move to one at random
-					newPosition := rand.IntN(len(freeSquares))
-					newX := freeSquares[newPosition][0]
-					newY := freeSquares[newPosition][1]
-					if buffer[newX][newY].typeId == 0 {
-						buffer[newX][newY].typeId = 1
-						if grid[x][y].breedTimer <= 0 {
-							buffer[x][y].typeId = 1
-							buffer[x][y].breedTimer = fishBreed
-							buffer[newX][newY].breedTimer = fishBreed
-						} else {
-							buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1
-						}
-					} else {
-						buffer[x][y].typeId = grid[x][y].typeId
-						buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
-					}
-				}
-
-			} else if grid[x][y].typeId == 2 { // if shark
-				fishSquares := [][2]int{}        // array of fish square coordinates
-				freeSquares := [][2]int{}        // array of free square coordinates
-				leftX := (x - 1 + width) % width // wrap around
-				rightX := (x + 1) % width
-				upY := (y - 1 + height) % height
-				downY := (y + 1) % height
-				if grid[x][upY].typeId == 1 && buffer[x][upY].typeId != 2 {
-					fishSquares = append(fishSquares, [2]int{x, upY})
-				} else if grid[x][upY].typeId == 0 && buffer[x][upY].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x, upY})
-				}
-				if grid[leftX][y].typeId == 1 && buffer[leftX][y].typeId != 2 {
-					fishSquares = append(fishSquares, [2]int{leftX, y})
-				} else if grid[leftX][y].typeId == 0 && buffer[leftX][y].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{leftX, y})
-				}
-				if grid[rightX][y].typeId == 1 && buffer[rightX][y].typeId != 2 {
-					fishSquares = append(fishSquares, [2]int{rightX, y})
-				} else if grid[rightX][y].typeId == 0 && buffer[rightX][y].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{rightX, y})
-				}
-				if grid[x][downY].typeId == 1 && buffer[x][downY].typeId != 2 {
-					fishSquares = append(fishSquares, [2]int{x, downY})
-				} else if grid[x][downY].typeId == 0 && buffer[x][downY].typeId == 0 {
-					freeSquares = append(freeSquares, [2]int{x, downY})
-				}
-				if len(fishSquares) > 0 { // If there are adjacent fish squares, pick one at random and move there
-					newPosition := rand.IntN(len(fishSquares))
-					newX := fishSquares[newPosition][0]
-					newY := fishSquares[newPosition][1]
-					if buffer[newX][newY].typeId != 2 { // is there a shark already there in buffer
-						buffer[newX][newY].typeId = 2
-						buffer[newX][newY].energy = grid[x][y].energy + 3 // shark eats fish, gains energy
-						if buffer[newX][newY].energy <= 0 {               // if energy < 0, kill shark
-							buffer[newX][newY].typeId = 0
-							continue // skip rest of code in loop
-						}
-						if grid[x][y].breedTimer <= 0 { // if breed timer is 0
-							buffer[x][y].typeId = 2 // leave shark in place
-							buffer[x][y].breedTimer = sharkBreed
-							buffer[x][y].energy = starve
-							buffer[newX][newY].breedTimer = sharkBreed // Parent breedtimer reset
-						} else {
-							buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1 // if breed timer not 0, decrement
-						}
-					} else {
-						buffer[x][y] = grid[x][y] // stay put
-						buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
-					}
-				} else if len(freeSquares) > 0 { // if there are no adjacent fish, but there are adjacent free squares, move to one at random
-					newPosition := rand.IntN(len(freeSquares))
-					newX := freeSquares[newPosition][0]
-					newY := freeSquares[newPosition][1]
-					if buffer[newX][newY].typeId != 2 { // Is there a shark already there in buffer
-						buffer[newX][newY].typeId = 2
-						buffer[newX][newY].energy = grid[x][y].energy - 1 // -1 energy for movement
-						if buffer[newX][newY].energy <= 0 {               // if energy < 0, kill shark
-							buffer[newX][newY].typeId = 0
-							continue // skip rest of code in loop
-						}
-						if grid[x][y].breedTimer <= 0 { // if breed timer is 0
-							buffer[x][y].typeId = 2 // leave shark in place
-							buffer[x][y].breedTimer = sharkBreed
-							buffer[x][y].energy = starve
-							buffer[newX][newY].breedTimer = sharkBreed // parent breedtimer reset
-						} else {
-							buffer[newX][newY].breedTimer = grid[x][y].breedTimer - 1 // if breed timer not 0, decrement
-						}
-					} else {
-						buffer[x][y] = grid[x][y] // stay put
-						buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
-					}
-				} else { // No free adjacent squares
-					buffer[x][y] = grid[x][y]
-					buffer[x][y].energy = grid[x][y].energy - 1
-					buffer[x][y].breedTimer = grid[x][y].breedTimer - 1
-					if buffer[x][y].energy <= 0 {
-						buffer[x][y].typeId = 0
-						continue
-					}
-				}
+			if grid[x][y].typeId == 1 {
+				updateFish(x, y)
+				numFish++
+			} else if grid[x][y].typeId == 2 {
+				updateSharks(x, y)
+				numShark++
 			}
 		}
 	}
 
-	chronon++
-	temp := buffer
-	buffer = grid
-	grid = temp
+	grid = buffer
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			buffer[x][y].typeId = 0
+			buffer[x][y] = square{}
 		}
 	}
 
@@ -232,21 +249,27 @@ func display(window *ebiten.Image) {
 }
 
 func main() {
-	// Initializes grid with random fish and sharks
+	coords := [][2]int{}
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			// Float32() returns a random floating point number between 0.0 and 1.0
-			if rand.Float32() < 0.1 {
-				grid[x][y].typeId = 1
-				grid[x][y].breedTimer = fishBreed
-			} else if rand.Float32() < 0.5 {
-				grid[x][y].typeId = 2
-				grid[x][y].breedTimer = sharkBreed
-				grid[x][y].energy = starve
-			} else {
-				grid[x][y].typeId = 0
-			}
+			coords = append(coords, [2]int{x, y})
 		}
+	}
+	rand.Shuffle(len(coords), func(i, j int) {
+		coords[i], coords[j] = coords[j], coords[i]
+	})
+	for i := 0; i < numShark+numFish; i++ {
+		x := coords[i][0]
+		y := coords[i][1]
+		grid[x][y].typeId = 1
+		grid[x][y].breedTimer = fishBreed
+	}
+	for i := 0; i < numShark; i++ {
+		x := coords[i][0]
+		y := coords[i][1]
+		grid[x][y].typeId = 2
+		grid[x][y].breedTimer = sharkBreed
+		grid[x][y].energy = starve
 	}
 
 	// Starts simulation
