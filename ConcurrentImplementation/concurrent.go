@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Sequential Wa-Tor Simulation in Go
+// Concurrent Wa-Tor Simulation in Go
 
 package main
 
@@ -21,6 +21,7 @@ import (
 	"image/color"
 	"log"
 	"math/rand/v2"
+	"sync"
 
 	"github.com/hajimehoshi/ebiten"
 )
@@ -42,7 +43,7 @@ var sharkBreed int = 8
 var starve int = 5
 var energyGain = 4
 var grid [width][height]square = [width][height]square{}
-var threads int = 4
+var threads int = 8
 
 type square struct {
 	typeId     int // 0 = empty space, 1 = fish, 2 = shark
@@ -202,19 +203,19 @@ func updateSharks(x int, y int) error {
 }
 
 func update() error {
-	numFish = 0
-	numShark = 0
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			if grid[x][y].typeId == 1 {
-				updateFish(x, y)
-				numFish++
-			} else if grid[x][y].typeId == 2 {
-				updateSharks(x, y)
-				numShark++
-			}
-		}
+	var wg sync.WaitGroup
+	jobs := make(chan int, width*height)
+
+	for worker := 1; worker <= threads; worker++ {
+		wg.Add(1)
+		go concurrentUpdate(&wg, jobs)
 	}
+	for x := 0; x <= width-1; x++ {
+		jobs <- x
+	}
+	close(jobs)
+
+	wg.Wait()
 
 	grid = buffer
 
@@ -225,6 +226,21 @@ func update() error {
 	}
 
 	return nil
+}
+
+func concurrentUpdate(wg *sync.WaitGroup, jobs chan int) {
+	defer wg.Done()
+
+	for job := range jobs {
+		x := job
+		for y := 0; y < height; y++ {
+			if grid[x][y].typeId == 1 {
+				updateFish(x, y)
+			} else if grid[x][y].typeId == 2 {
+				updateSharks(x, y)
+			}
+		}
+	}
 }
 
 func display(window *ebiten.Image) {
@@ -273,7 +289,7 @@ func main() {
 	}
 
 	// Starts simulation
-	if err := ebiten.Run(frame, width, height, 1, "Wa-tor Simulation (Sequential)"); err != nil {
+	if err := ebiten.Run(frame, width, height, 1, "Wa-tor Simulation (Concurrent)"); err != nil {
 		log.Fatal(err)
 	}
 }
