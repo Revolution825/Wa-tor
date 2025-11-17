@@ -22,6 +22,7 @@ import (
 	"log"
 	"math/rand/v2"
 	"sync"
+	"time"
 
 	"github.com/hajimehoshi/ebiten"
 )
@@ -43,7 +44,7 @@ var sharkBreed int = 8
 var starve int = 5
 var energyGain = 4
 var grid [width][height]square = [width][height]square{}
-var threads int = 8
+var threads int = 6
 
 type square struct {
 	typeId     int // 0 = empty space, 1 = fish, 2 = shark
@@ -51,10 +52,12 @@ type square struct {
 	breedTimer int
 }
 
-var chronon int = 1
+var chronon int = 0
+var start = time.Now()
 
 func frame(window *ebiten.Image) error {
 	count++
+	chronon++
 	var err error = nil
 
 	if count == 1 {
@@ -63,6 +66,12 @@ func frame(window *ebiten.Image) error {
 	}
 	if !ebiten.IsDrawingSkipped() {
 		display(window)
+	}
+
+	if chronon == 1000 {
+		var elapsed = time.Since(start)
+		log.Printf("Elapsed time for 1000 chronons : %s", elapsed)
+		chronon = 0
 	}
 
 	return err
