@@ -44,10 +44,11 @@ var sharkBreed int = 8
 var starve int = 5
 var energyGain = 4
 var grid [width][height]square = [width][height]square{}
-var threads int = 6
+var threads int = 3
 
 var tileWidth = width / threads
-var tileLocks = make([]sync.Mutex, threads-1)
+var remainingWidth = width % threads
+var tileLocks = make([]sync.Mutex, threads)
 
 type square struct {
 	typeId     int // 0 = empty space, 1 = fish, 2 = shark
@@ -280,6 +281,9 @@ func update() error {
 		endX := startX + tileWidth
 		// Handle any remaining columns in the last worker
 		if worker == threads-1 {
+			endX += remainingWidth
+		}
+		if endX > width {
 			endX = width
 		}
 		wg.Add(1)
