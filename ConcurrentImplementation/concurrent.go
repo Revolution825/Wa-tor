@@ -28,8 +28,8 @@ import (
 )
 
 const scale = 1
-const width = 800
-const height = 800
+const width = 1800
+const height = 1000
 
 var blue color.Color = color.RGBA{69, 145, 196, 255}
 var yellow color.Color = color.RGBA{255, 230, 120, 255}
@@ -37,18 +37,19 @@ var red color.Color = color.RGBA{255, 50, 50, 255}
 var buffer [width][height]square = [width][height]square{}
 var count int = 0
 
-var numShark int = 100000
+var numShark int = 100
 var numFish int = 200000
 var fishBreed int = 5
-var sharkBreed int = 8
-var starve int = 5
-var energyGain = 4
+var sharkBreed int = 10
+var starve int = 4
+var energyGain = 2
 var grid [width][height]square = [width][height]square{}
-var threads int = 3
+var threads int = 4
 
 var tileWidth = width / threads
 var remainingWidth = width % threads
 var tileLocks = make([]sync.Mutex, threads)
+var starts = getTileStarts(threads)
 
 type square struct {
 	typeId     int // 0 = empty space, 1 = fish, 2 = shark
@@ -123,162 +124,241 @@ func gatherFishSquares(x int, y int) [][2]int {
 	return fishSquares
 }
 
-func updateFish(x int, y int, worker int) error {
-	if buffer[x][y].typeId == 2 {
-		return nil // skip if shark already moved here
+func updateFish(x int, y int, worker int, starts []int) error {
+	// if a fish is not at the current position, return early
+	currentSquare := grid[x][y]
+	if currentSquare.typeId != 1 {
+		return nil
 	}
 	freeSquares := gatherFreeSquares(x, y)
 	newX, newY := x, y // Initialize newX and newY
+	moved := false
+
 	// If there are adjacent free squares, pick one at random and move there
 	if len(freeSquares) > 0 {
 		newPosition := rand.IntN(len(freeSquares))
 		newX = freeSquares[newPosition][0]
 		newY = freeSquares[newPosition][1]
-		if buffer[newX][newY].typeId == 0 {
-			safeWrite(newX, newY, square{
-				typeId:     1,
-				breedTimer: grid[x][y].breedTimer - 1,
-			}, worker)
-		} else {
-			// No free adjacent squares, stay put
+
+		moved = safeWrite(newX, newY, square{
+			typeId:     1,
+			breedTimer: currentSquare.breedTimer - 1,
+		}, worker, starts)
+
+		if !moved {
+			// Failed to move, stay put
 			safeWrite(x, y, square{
 				typeId:     1,
-				breedTimer: grid[x][y].breedTimer - 1,
-			}, worker)
+				breedTimer: currentSquare.breedTimer - 1,
+			}, worker, starts)
+			newX = x
+			newY = y
 		}
 	} else {
 		// No free adjacent squares, stay put
 		safeWrite(x, y, square{
-			typeId:     grid[x][y].typeId,
-			breedTimer: grid[x][y].breedTimer - 1,
-		}, worker)
+			typeId:     1,
+			breedTimer: currentSquare.breedTimer - 1,
+		}, worker, starts)
 	}
 	// Handle breeding
-	if buffer[newX][newY].breedTimer <= 0 {
-		safeWrite(newX, newY, square{
-			typeId:     1,
-			breedTimer: fishBreed,
-		}, worker)
+	if currentSquare.breedTimer <= 0 {
+		// Place new fish at original position
 		safeWrite(x, y, square{
 			typeId:     1,
 			breedTimer: fishBreed,
-		}, worker)
+		}, worker, starts)
+
+		// Reset breed timer for moved fish
+		safeWrite(newX, newY, square{
+			typeId:     1,
+			breedTimer: fishBreed,
+		}, worker, starts)
 	}
 	return nil
 }
 
-func updateSharks(x int, y int, worker int) error {
+func updateSharks(x int, y int, worker int, starts []int) error {
+	currentSquare := grid[x][y]
+	// if a shark is not at the current position, return early
+	if currentSquare.typeId != 2 {
+		return nil
+	}
 	freeSquares := gatherFreeSquares(x, y)
 	fishSquares := gatherFishSquares(x, y)
+
 	newX, newY := x, y // Initialize newX and newY
+	energyAfterMove := currentSquare.energy - 1
+	moved := false
+
 	if len(fishSquares) > 0 {
 		// If there are adjacent fish squares, pick one at random and move there
 		newPosition := rand.IntN(len(fishSquares))
 		newX = fishSquares[newPosition][0]
 		newY = fishSquares[newPosition][1]
-		if buffer[newX][newY].typeId != 2 {
-			safeWrite(newX, newY, square{
-				typeId:     2,
-				energy:     grid[x][y].energy - 1 + energyGain, // shark eats fish, gains energy
-				breedTimer: grid[x][y].breedTimer - 1,
-			}, worker)
-		} else if len(freeSquares) > 0 {
-			// if shark can't move to fish square because there's a shark there already in the buffer, try to move to free square
-			newPosition := rand.IntN(len(freeSquares))
-			newX = freeSquares[newPosition][0]
-			newY = freeSquares[newPosition][1]
-			safeWrite(newX, newY, square{
-				typeId:     2,
-				energy:     grid[x][y].energy - 1, // -1 energy for movement
-				breedTimer: grid[x][y].breedTimer - 1,
-			}, worker)
+
+		moved = safeWrite(newX, newY, square{
+			typeId:     2,
+			energy:     energyAfterMove + energyGain, // shark eats fish, gains energy
+			breedTimer: currentSquare.breedTimer - 1,
+		}, worker, starts)
+
+		if moved {
+			energyAfterMove += energyGain
 		} else {
-			// No free adjacent squares, stay put
+			// Failed to move, stay put
 			safeWrite(x, y, square{
-				typeId:     grid[x][y].typeId,
-				energy:     grid[x][y].energy - 1,
-				breedTimer: grid[x][y].breedTimer - 1,
-			}, worker)
-			newX = x
-			newY = y
+				typeId:     2,
+				energy:     energyAfterMove,
+				breedTimer: currentSquare.breedTimer - 1,
+			}, worker, starts)
 		}
+
 	} else if len(freeSquares) > 0 {
 		// if shark can't move to fish square because there's a shark there already in the buffer, try to move to free square
 		newPosition := rand.IntN(len(freeSquares))
 		newX = freeSquares[newPosition][0]
 		newY = freeSquares[newPosition][1]
+
+		moved = safeWrite(newX, newY, square{
+			typeId:     2,
+			energy:     energyAfterMove,
+			breedTimer: currentSquare.breedTimer - 1,
+		}, worker, starts)
+
+		if !moved {
+			newX = x
+			newY = y
+		}
+	} else {
+		newX = x
+		newY = y
+	}
+
+	if !moved {
+		// No free adjacent squares, stay put
 		safeWrite(newX, newY, square{
 			typeId:     2,
-			energy:     grid[x][y].energy - 1,
-			breedTimer: grid[x][y].breedTimer - 1,
-		}, worker)
-	} else {
-		// No free adjacent squares, stay put
-		safeWrite(x, y, square{
-			typeId:     grid[x][y].typeId,
-			energy:     grid[x][y].energy - 1,
-			breedTimer: grid[x][y].breedTimer - 1,
-		}, worker)
+			energy:     energyAfterMove,
+			breedTimer: currentSquare.breedTimer - 1,
+		}, worker, starts)
 	}
+
 	// Handle starvation
-	if buffer[newX][newY].energy <= 0 {
+	if energyAfterMove <= 0 {
 		safeWrite(newX, newY, square{
 			typeId:     0,
 			energy:     0,
 			breedTimer: 0,
-		}, worker)
+		}, worker, starts)
 		return nil
 	}
 	// Handle breeding
-	if buffer[newX][newY].breedTimer <= 0 {
+	if currentSquare.breedTimer <= 0 {
+		// Reset breed timer for moved shark
+		safeWrite(newX, newY, square{
+			typeId:     2,
+			energy:     energyAfterMove,
+			breedTimer: sharkBreed,
+		}, worker, starts)
+
+		// Place new shark at original position
 		safeWrite(x, y, square{
 			typeId:     2,
 			energy:     starve,
 			breedTimer: sharkBreed,
-		}, worker)
-		safeWrite(newX, newY, square{
-			typeId:     2,
-			energy:     buffer[newX][newY].energy,
-			breedTimer: sharkBreed,
-		}, worker)
+		}, worker, starts)
 	}
 	return nil
 }
 
-func whichTile(x int) int {
-	return x / tileWidth
+func tileOfX(x int, starts []int) int {
+	for i := 0; i < len(starts)-1; i++ {
+		if x >= starts[i] && x < starts[i+1] {
+			return i
+		}
+	}
+	return len(starts) - 1
 }
 
-func safeWrite(x int, y int, square square, workerTile int) {
-	targetTile := whichTile(x)
+func getTileStarts(threads int) []int {
+	remainingWidth := width % threads
+	starts := make([]int, threads+1)
+	position := 0
+	for i := 0; i < threads; i++ {
+		starts[i] = position
+		add := tileWidth
+		if i == threads-1 {
+			add += remainingWidth
+		}
+		position += add
+	}
+	starts[threads] = position
+	return starts
+}
 
-	// If writing to the current tile proceed as normal
+func safeWrite(x int, y int, square square, workerTile int, starts []int) bool {
+	targetTile := tileOfX(x, starts)
+
+	// Same tile, no locking needed
 	if targetTile == workerTile {
-		buffer[x][y] = square
-		return
+		existing := buffer[x][y]
+
+		// Empty square, safe to write
+		if existing.typeId == 0 {
+			buffer[x][y] = square
+			return true
+		}
+
+		// Shark can overwrite fish
+		if existing.typeId == 1 && square.typeId == 2 {
+			buffer[x][y] = square
+			return true
+		}
+
+		// shark can overwrite empty, allows starvation
+		if existing.typeId == 2 && square.typeId == 0 {
+			buffer[x][y] = square
+			return true
+		}
+
+		// already occupied
+		return false
 	}
 
-	// writing to the tile to the right
-	if targetTile > workerTile {
-		tileLocks[workerTile].Lock()
+	lockIndex := min(workerTile, targetTile)
+	tileLocks[lockIndex].Lock()
+	defer tileLocks[lockIndex].Unlock()
+
+	existing := buffer[x][y]
+
+	// Empty square, safe to write
+	if existing.typeId == 0 {
 		buffer[x][y] = square
-		tileLocks[workerTile].Unlock()
+		return true
 	}
 
-	// writing to the tile to the left
-	if targetTile < workerTile {
-		tileLocks[targetTile].Lock()
+	// Shark can overwrite fish
+	if existing.typeId == 1 && square.typeId == 2 {
 		buffer[x][y] = square
-		tileLocks[targetTile].Unlock()
+		return true
 	}
+
+	// shark can overwrite empty, allows starvation
+	if existing.typeId == 2 && square.typeId == 0 {
+		buffer[x][y] = square
+		return true
+	}
+
+	return false
 }
 
 func update() error {
 	var wg sync.WaitGroup
 	for worker := 0; worker < threads; worker++ {
 		// Split up tiles based on number of threads
-		startX := worker * tileWidth
-		endX := startX + tileWidth
+		startX := starts[worker]
+		endX := starts[worker+1]
 		// Handle any remaining columns in the last worker
 		if worker == threads-1 {
 			endX += remainingWidth
@@ -287,31 +367,27 @@ func update() error {
 			endX = width
 		}
 		wg.Add(1)
-		go concurrentUpdate(&wg, startX, endX, worker)
+		go concurrentUpdate(&wg, startX, endX, worker, starts)
 	}
 
 	wg.Wait()
 
 	grid = buffer
 
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			buffer[x][y] = square{}
-		}
-	}
+	buffer = [width][height]square{}
 
 	return nil
 }
 
-func concurrentUpdate(wg *sync.WaitGroup, startX int, endX int, worker int) {
+func concurrentUpdate(wg *sync.WaitGroup, startX int, endX int, worker int, starts []int) {
 	defer wg.Done()
 
 	for x := startX; x < endX; x++ {
 		for y := 0; y < height; y++ {
 			if grid[x][y].typeId == 1 {
-				updateFish(x, y, worker)
+				updateFish(x, y, worker, starts)
 			} else if grid[x][y].typeId == 2 {
-				updateSharks(x, y, worker)
+				updateSharks(x, y, worker, starts)
 			}
 		}
 	}
