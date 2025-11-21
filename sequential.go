@@ -27,8 +27,8 @@ import (
 )
 
 const scale = 1
-const width = 800
-const height = 800
+const width = 1800
+const height = 1000
 
 var blue color.Color = color.RGBA{69, 145, 196, 255}
 var yellow color.Color = color.RGBA{255, 230, 120, 255}
@@ -36,12 +36,12 @@ var red color.Color = color.RGBA{255, 50, 50, 255}
 var buffer [width][height]square = [width][height]square{}
 var count int = 0
 
-var numShark int = 100000
+var numShark int = 100
 var numFish int = 200000
 var fishBreed int = 5
-var sharkBreed int = 8
-var starve int = 5
-var energyGain = 4
+var sharkBreed int = 10
+var starve int = 4
+var energyGain = 2
 var grid [width][height]square = [width][height]square{}
 
 type square struct {
@@ -209,16 +209,12 @@ func updateSharks(x int, y int) error {
 }
 
 func update() error {
-	numFish = 0
-	numShark = 0
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 			if grid[x][y].typeId == 1 {
 				updateFish(x, y)
-				numFish++
 			} else if grid[x][y].typeId == 2 {
 				updateSharks(x, y)
-				numShark++
 			}
 		}
 	}
