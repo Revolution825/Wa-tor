@@ -44,7 +44,7 @@ var sharkBreed int = 10
 var starve int = 4
 var energyGain = 2
 var grid [width][height]square = [width][height]square{}
-var threads int = 4
+var threads int = 1
 
 var tileWidth = width / threads
 var remainingWidth = width % threads
@@ -326,9 +326,8 @@ func safeWrite(x int, y int, square square, workerTile int, starts []int) bool {
 		return false
 	}
 
-	lockIndex := min(workerTile, targetTile)
-	tileLocks[lockIndex].Lock()
-	defer tileLocks[lockIndex].Unlock()
+	tileLocks[targetTile].Lock()
+	defer tileLocks[targetTile].Unlock()
 
 	existing := buffer[x][y]
 
@@ -359,10 +358,6 @@ func update() error {
 		// Split up tiles based on number of threads
 		startX := starts[worker]
 		endX := starts[worker+1]
-		// Handle any remaining columns in the last worker
-		if worker == threads-1 {
-			endX += remainingWidth
-		}
 		if endX > width {
 			endX = width
 		}
