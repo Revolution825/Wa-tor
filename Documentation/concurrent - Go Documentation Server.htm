@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html><script>var pmblock = 1.4;</script><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>watorconcurrent - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="concurrent%20-%20Go%20Documentation%20Server_files/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="concurrent%20-%20Go%20Documentation%20Server_files/jquery.js" defer="defer"></script>
+
+
+
+<script>var goVersion = "go1.25.3";</script>
+<script src="concurrent%20-%20Go%20Documentation%20Server_files/godocs.js" defer="defer"></script>
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="http://localhost:6060/pkg/">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="http://localhost:6060/pkg/">GoDoc</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+<form method="GET" action="/search">
+<div id="menu" style="min-width: 60px;">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required=""><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide" style="outline: 0px;" tabindex="-1">
+<div class="container">
+
+
+  <h1>
+    Package watorconcurrent
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "help/concurrent"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				<p>package watorconcurrent implements a concurrent Wa-Tor Simulation in Go
+
+				
+			</p></div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+				
+				<dd><a href="#ConcurrentUpdate">func ConcurrentUpdate(wg *sync.WaitGroup, startX int, endX int, worker int, starts []int)</a></dd>
+			
+				
+				<dd><a href="#Display">func Display(window *ebiten.Image)</a></dd>
+			
+				
+				<dd><a href="#Frame">func Frame(window *ebiten.Image) error</a></dd>
+			
+				
+				<dd><a href="#GatherFishSquares">func GatherFishSquares(x int, y int) [][2]int</a></dd>
+			
+				
+				<dd><a href="#GatherFreeSquares">func GatherFreeSquares(x int, y int) [][2]int</a></dd>
+			
+				
+				<dd><a href="#GetTileStarts">func GetTileStarts(threads int) []int</a></dd>
+			
+				
+				<dd><a href="#RunConcurrent">func RunConcurrent()</a></dd>
+			
+				
+				<dd><a href="#SafeWrite">func SafeWrite(x int, y int, square square, workerTile int, starts []int) bool</a></dd>
+			
+				
+				<dd><a href="#TileOfX">func TileOfX(x int, starts []int) int</a></dd>
+			
+				
+				<dd><a href="#Update">func Update() error</a></dd>
+			
+				
+				<dd><a href="#UpdateFish">func UpdateFish(x int, y int, worker int, starts []int) error</a></dd>
+			
+				
+				<dd><a href="#UpdateSharks">func UpdateSharks(x int, y int, worker int, starts []int) error</a></dd>
+			
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:6060/src/help/concurrent/concurrent.go">concurrent.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+			
+			
+			<h2 id="ConcurrentUpdate">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=14012:14101#L468">ConcurrentUpdate</a>
+				<a class="permalink" href="#ConcurrentUpdate">¶</a>
+				
+				
+			</h2>
+			<pre>func ConcurrentUpdate(wg *<a href="http://localhost:6060/pkg/sync/">sync</a>.<a href="http://localhost:6060/pkg/sync/#WaitGroup">WaitGroup</a>, startX <a href="http://localhost:6060/pkg/builtin/#int">int</a>, endX <a href="http://localhost:6060/pkg/builtin/#int">int</a>, worker <a href="http://localhost:6060/pkg/builtin/#int">int</a>, starts []<a href="http://localhost:6060/pkg/builtin/#int">int</a>)</pre>
+			<p>ConcurrentUpdate iterates through a specified tile in the grid and detects whether each cell
+contains a fish or a shark and calls the relevant function.
+</p><p>Parameters:
+</p><pre>wg *sync.WaitGroup - waitgroup for synchronization.
+startX int - tile start.
+endX int - tile end.
+worker int - current tile number.
+starts []int - slice representing x values of where each tile starts.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="Display">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=14498:14532#L487">Display</a>
+				<a class="permalink" href="#Display">¶</a>
+				
+				
+			</h2>
+			<pre>func Display(window *<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/">ebiten</a>.<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/#Image">Image</a>)</pre>
+			<p>Display draws the new grid after each Update loop.
+</p><p>Parameters:
+</p><pre>window — the Ebiten image buffer used for drawing.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="Frame">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=3346:3384#L97">Frame</a>
+				<a class="permalink" href="#Frame">¶</a>
+				
+				
+			</h2>
+			<pre>func Frame(window *<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/">ebiten</a>.<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/#Image">Image</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>Frame updates the simulation each Frame by calling the Update() function and the Display() function.
+</p><p>Parameters:
+</p><pre>window — the Ebiten image buffer used for drawing.
+</pre>
+<p>Returns:
+</p><pre>error - if the Update step fails. nil otherwise.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="GatherFishSquares">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=5206:5251#L163">GatherFishSquares</a>
+				<a class="permalink" href="#GatherFishSquares">¶</a>
+				
+				
+			</h2>
+			<pre>func GatherFishSquares(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>) [][2]<a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>GatherFishSquares takes in the coordinates of a particular square and returns a slice containing
+the coordinates of any squares containing fish to the north, south, east and west of the inputted
+coordinates.
+</p><p>Parameters:
+</p><pre>x - x coordinate of current square
+y - y coordinate of current square
+</pre>
+<p>Returns:
+</p><pre>[][2]int - containing the coordinates of all fish squares. if there are no fish squares returns empty slice.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="GatherFreeSquares">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=4151:4196#L130">GatherFreeSquares</a>
+				<a class="permalink" href="#GatherFreeSquares">¶</a>
+				
+				
+			</h2>
+			<pre>func GatherFreeSquares(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>) [][2]<a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>GatherFreeSquares takes in the coordinates of a particular square and returns a slice containing
+the coordinates of any empty squares to the north, south, east and west of the inputted coordinates.
+</p><p>Parameters:
+</p><pre> x - x coordinate of current square.
+	Y - y coordinate of current square.
+</pre>
+<p>Returns:
+</p><pre>[][2]int - containing the coordinates of all free squares. if there are no free squares returns empty slice.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="GetTileStarts">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=11222:11259#L364">GetTileStarts</a>
+				<a class="permalink" href="#GetTileStarts">¶</a>
+				
+				
+			</h2>
+			<pre>func GetTileStarts(threads <a href="http://localhost:6060/pkg/builtin/#int">int</a>) []<a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>GetTileStarts returns a slice of ints representing the x values of where each tile starts.
+</p><p>Parameters:
+</p><pre>threads int - number of threads.
+</pre>
+<p>Returns:
+</p><pre>[]int - slice of ints representing the x values of where each tile starts.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="RunConcurrent">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=14974:14994#L506">RunConcurrent</a>
+				<a class="permalink" href="#RunConcurrent">¶</a>
+				
+				
+			</h2>
+			<pre>func RunConcurrent()</pre>
+			<p>RunConcurrent initializes the grid and starts the concurrent simulation loop.
+
+			
+			
+
+		
+			
+			
+			</p><h2 id="SafeWrite">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=12196:12274#L394">SafeWrite</a>
+				<a class="permalink" href="#SafeWrite">¶</a>
+				
+				
+			</h2>
+			<pre>func SafeWrite(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>, square square, workerTile <a href="http://localhost:6060/pkg/builtin/#int">int</a>, starts []<a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#bool">bool</a></pre>
+			<p>SafeWrite checks whether or not the coordinates that are being written to are in the current tile (no lock will be needed)
+or if it is in a different tile (a lock will be needed). It also checks the buffer to ensure only legal writes are allowed.
+</p><p>Parameters:
+</p><pre>x int - x coordinate of new square.
+y int - y coordinate of new square.
+square square - details of the square we want to SafeWrite.
+workerTile int - current tile/thread we are working on.
+starts []int - slice representing x values of where each tile starts.
+</pre>
+<p>Returns:
+</p><pre>bool - returns whether or not the SafeWrite was successful.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="TileOfX">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=10792:10829#L346">TileOfX</a>
+				<a class="permalink" href="#TileOfX">¶</a>
+				
+				
+			</h2>
+			<pre>func TileOfX(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, starts []<a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>TileOfX returns which tile the current inputted x value exists on.
+</p><p>Parameters:
+</p><pre>x - current x value.
+starts - slice of ints representing where each tile starts.
+</pre>
+<p>Returns:
+</p><pre>int - coresponding with the tile the current x value exists on.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="Update">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=13247:13266#L437">Update</a>
+				<a class="permalink" href="#Update">¶</a>
+				
+				
+			</h2>
+			<pre>func Update() <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>Update splits tiles up based on number of threads, calls ConcurrentUpdate, waits for all routines to finish,
+sets grid to be buffer, and zeros the buffer each Frame.
+</p><p>Returns:
+</p><pre>nil
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="UpdateFish">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=6581:6642#L200">UpdateFish</a>
+				<a class="permalink" href="#UpdateFish">¶</a>
+				
+				
+			</h2>
+			<pre>func UpdateFish(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>, worker <a href="http://localhost:6060/pkg/builtin/#int">int</a>, starts []<a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>UpdateFish takes in the coordinates of a particular fish. It checks if this fish is still in the buffer.
+If not, GatherFreeSquares is called. if there are free squares, one is picked at random and SafeWrite
+attempts to write to the new coordinates. If SafeWrite fails or there are no adjacent cells free the fish
+stays put. UpdateFish also handles breeding by checking the moved fishes' breedtimer. if it is &lt;=0 a new fish is
+placed in it's old place and both fishes' breedTimers are reset.
+</p><p>Parameters:
+</p><pre>x - x coordinate of current fish square.
+y - y coordinate of current fish square.
+worker int - current tile/thread we are working on.
+starts []int - represents x values of where each tile starts.
+</pre>
+<p>Returns:
+</p><pre>nil
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="UpdateSharks">func <a href="http://localhost:6060/src/help/concurrent/concurrent.go?s=8618:8681#L261">UpdateSharks</a>
+				<a class="permalink" href="#UpdateSharks">¶</a>
+				
+				
+			</h2>
+			<pre>func UpdateSharks(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>, worker <a href="http://localhost:6060/pkg/builtin/#int">int</a>, starts []<a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>UpdateSharks takes in the coordinates of a particular shark. GatherFishSquares and GatherFreeSquares is called.
+if there are adjacent fish squares one is picked at random and SafeWrite attempts to write to the new coordinates.
+If SafeWrite fails the shark will stay put. If there are no fish squares but there are free squares one is picked
+at random and SafeWrite attempts to write to the new coordinates. If SafeWrite fails the shark will stay put.
+A shark loses 1 energy per turn and gains a specified amount of energy upon eating a fish. If a sharks energy is
+&lt;=0 it disappears. when a sharks breedtimer is &lt;=0 a new shark is placed at its old position and both sharks'
+breedTimers reset.
+</p><p>Parameters:
+</p><pre>x - x coordinate of current fish square.
+y - y coordinate of current fish square.
+worker int - current tile/thread we are working on.
+starts []int - represents x values of where each tile starts.
+</pre>
+<p>Returns:
+</p><pre>nil
+</pre>
+
+			
+			
+
+		
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.25.3.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:6060/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

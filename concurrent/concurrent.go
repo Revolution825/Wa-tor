@@ -15,8 +15,8 @@
 
 // Concurrent Wa-Tor Simulation in Go
 
-// package main implements a concurrent Wa-Tor Simulation in Go
-package main
+// package watorconcurrent implements a concurrent Wa-Tor Simulation in Go
+package watorconcurrent
 
 import (
 	"image/color"
@@ -74,7 +74,7 @@ var tileWidth = width / threads
 var tileLocks = make([]sync.Mutex, threads)
 
 // starts is a slice of ints representing the x values of where each tile starts.
-var starts = getTileStarts(threads)
+var starts = GetTileStarts(threads)
 
 // square represents a cell in the simulation grid.
 //
@@ -95,7 +95,7 @@ var chronon int = 0
 // start is used for tracking elapsed time for measuring performance.
 var start = time.Now()
 
-// frame updates the simulation each frame by calling the update() function and the display() function.
+// Frame updates the simulation each Frame by calling the Update() function and the Display() function.
 //
 // Parameters:
 //
@@ -103,18 +103,18 @@ var start = time.Now()
 //
 // Returns:
 //
-//	error - if the update step fails. nil otherwise.
-func frame(window *ebiten.Image) error {
+//	error - if the Update step fails. nil otherwise.
+func Frame(window *ebiten.Image) error {
 	count++
 	chronon++
 	var err error = nil
 
 	if count == 1 {
-		err = update()
+		err = Update()
 		count = 0
 	}
 	if !ebiten.IsDrawingSkipped() {
-		display(window)
+		Display(window)
 	}
 
 	if chronon == 1000 {
@@ -126,7 +126,7 @@ func frame(window *ebiten.Image) error {
 	return err
 }
 
-// gatherFreeSquares takes in the coordinates of a particular square and returns a slice containing
+// GatherFreeSquares takes in the coordinates of a particular square and returns a slice containing
 // the coordinates of any empty squares to the north, south, east and west of the inputted coordinates.
 //
 // Parameters:
@@ -137,7 +137,7 @@ func frame(window *ebiten.Image) error {
 // Returns:
 //
 //	[][2]int - containing the coordinates of all free squares. if there are no free squares returns empty slice.
-func gatherFreeSquares(x int, y int) [][2]int {
+func GatherFreeSquares(x int, y int) [][2]int {
 	freeSquares := [][2]int{}
 	leftX := (x - 1 + width) % width
 	rightX := (x + 1) % width
@@ -158,7 +158,7 @@ func gatherFreeSquares(x int, y int) [][2]int {
 	return freeSquares
 }
 
-// gatherFishSquares takes in the coordinates of a particular square and returns a slice containing
+// GatherFishSquares takes in the coordinates of a particular square and returns a slice containing
 // the coordinates of any squares containing fish to the north, south, east and west of the inputted
 // coordinates.
 //
@@ -170,7 +170,7 @@ func gatherFreeSquares(x int, y int) [][2]int {
 // Returns:
 //
 //	[][2]int - containing the coordinates of all fish squares. if there are no fish squares returns empty slice.
-func gatherFishSquares(x int, y int) [][2]int {
+func GatherFishSquares(x int, y int) [][2]int {
 	fishSquares := [][2]int{}
 	leftX := (x - 1 + width) % width
 	rightX := (x + 1) % width
@@ -191,10 +191,10 @@ func gatherFishSquares(x int, y int) [][2]int {
 	return fishSquares
 }
 
-// updateFish takes in the coordinates of a particular fish. It checks if this fish is still in the buffer.
-// If not, gatherFreeSquares is called. if there are free squares, one is picked at random and safeWrite
-// attempts to write to the new coordinates. If safeWrite fails or there are no adjacent cells free the fish
-// stays put. updateFish also handles breeding by checking the moved fishes' breedtimer. if it is <=0 a new fish is
+// UpdateFish takes in the coordinates of a particular fish. It checks if this fish is still in the buffer.
+// If not, GatherFreeSquares is called. if there are free squares, one is picked at random and SafeWrite
+// attempts to write to the new coordinates. If SafeWrite fails or there are no adjacent cells free the fish
+// stays put. UpdateFish also handles breeding by checking the moved fishes' breedtimer. if it is <=0 a new fish is
 // placed in it's old place and both fishes' breedTimers are reset.
 //
 // Parameters:
@@ -207,24 +207,24 @@ func gatherFishSquares(x int, y int) [][2]int {
 // Returns:
 //
 //	nil
-func updateFish(x int, y int, worker int, starts []int) error {
+func UpdateFish(x int, y int, worker int, starts []int) error {
 	currentSquare := grid[x][y]
 	if currentSquare.typeId != 1 {
 		return nil
 	}
-	freeSquares := gatherFreeSquares(x, y)
+	freeSquares := GatherFreeSquares(x, y)
 	newX, newY := x, y
 	moved := false
 	if len(freeSquares) > 0 {
 		newPosition := rand.IntN(len(freeSquares))
 		newX = freeSquares[newPosition][0]
 		newY = freeSquares[newPosition][1]
-		moved = safeWrite(newX, newY, square{
+		moved = SafeWrite(newX, newY, square{
 			typeId:     1,
 			breedTimer: currentSquare.breedTimer - 1,
 		}, worker, starts)
 		if !moved {
-			safeWrite(x, y, square{
+			SafeWrite(x, y, square{
 				typeId:     1,
 				breedTimer: currentSquare.breedTimer - 1,
 			}, worker, starts)
@@ -232,17 +232,17 @@ func updateFish(x int, y int, worker int, starts []int) error {
 			newY = y
 		}
 	} else {
-		safeWrite(x, y, square{
+		SafeWrite(x, y, square{
 			typeId:     1,
 			breedTimer: currentSquare.breedTimer - 1,
 		}, worker, starts)
 	}
 	if currentSquare.breedTimer <= 0 {
-		safeWrite(x, y, square{
+		SafeWrite(x, y, square{
 			typeId:     1,
 			breedTimer: fishBreed,
 		}, worker, starts)
-		safeWrite(newX, newY, square{
+		SafeWrite(newX, newY, square{
 			typeId:     1,
 			breedTimer: fishBreed,
 		}, worker, starts)
@@ -250,10 +250,10 @@ func updateFish(x int, y int, worker int, starts []int) error {
 	return nil
 }
 
-// updateSharks takes in the coordinates of a particular shark. gatherFishSquares and gatherFreeSquares is called.
-// if there are adjacent fish squares one is picked at random and safeWrite attempts to write to the new coordinates.
-// If safeWrite fails the shark will stay put. If there are no fish squares but there are free squares one is picked
-// at random and safeWrite attempts to write to the new coordinates. If safeWrite fails the shark will stay put.
+// UpdateSharks takes in the coordinates of a particular shark. GatherFishSquares and GatherFreeSquares is called.
+// if there are adjacent fish squares one is picked at random and SafeWrite attempts to write to the new coordinates.
+// If SafeWrite fails the shark will stay put. If there are no fish squares but there are free squares one is picked
+// at random and SafeWrite attempts to write to the new coordinates. If SafeWrite fails the shark will stay put.
 // A shark loses 1 energy per turn and gains a specified amount of energy upon eating a fish. If a sharks energy is
 // <=0 it disappears. when a sharks breedtimer is <=0 a new shark is placed at its old position and both sharks'
 // breedTimers reset.
@@ -268,13 +268,13 @@ func updateFish(x int, y int, worker int, starts []int) error {
 // Returns:
 //
 //	nil
-func updateSharks(x int, y int, worker int, starts []int) error {
+func UpdateSharks(x int, y int, worker int, starts []int) error {
 	currentSquare := grid[x][y]
 	if currentSquare.typeId != 2 {
 		return nil
 	}
-	freeSquares := gatherFreeSquares(x, y)
-	fishSquares := gatherFishSquares(x, y)
+	freeSquares := GatherFreeSquares(x, y)
+	fishSquares := GatherFishSquares(x, y)
 	newX, newY := x, y
 	energyAfterMove := currentSquare.energy - 1
 	moved := false
@@ -282,7 +282,7 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 		newPosition := rand.IntN(len(fishSquares))
 		newX = fishSquares[newPosition][0]
 		newY = fishSquares[newPosition][1]
-		moved = safeWrite(newX, newY, square{
+		moved = SafeWrite(newX, newY, square{
 			typeId:     2,
 			energy:     energyAfterMove + energyGain,
 			breedTimer: currentSquare.breedTimer - 1,
@@ -290,7 +290,7 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 		if moved {
 			energyAfterMove += energyGain
 		} else {
-			safeWrite(x, y, square{
+			SafeWrite(x, y, square{
 				typeId:     2,
 				energy:     energyAfterMove,
 				breedTimer: currentSquare.breedTimer - 1,
@@ -300,7 +300,7 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 		newPosition := rand.IntN(len(freeSquares))
 		newX = freeSquares[newPosition][0]
 		newY = freeSquares[newPosition][1]
-		moved = safeWrite(newX, newY, square{
+		moved = SafeWrite(newX, newY, square{
 			typeId:     2,
 			energy:     energyAfterMove,
 			breedTimer: currentSquare.breedTimer - 1,
@@ -314,14 +314,14 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 		newY = y
 	}
 	if !moved {
-		safeWrite(newX, newY, square{
+		SafeWrite(newX, newY, square{
 			typeId:     2,
 			energy:     energyAfterMove,
 			breedTimer: currentSquare.breedTimer - 1,
 		}, worker, starts)
 	}
 	if energyAfterMove <= 0 {
-		safeWrite(newX, newY, square{
+		SafeWrite(newX, newY, square{
 			typeId:     0,
 			energy:     0,
 			breedTimer: 0,
@@ -329,12 +329,12 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 		return nil
 	}
 	if currentSquare.breedTimer <= 0 {
-		safeWrite(newX, newY, square{
+		SafeWrite(newX, newY, square{
 			typeId:     2,
 			energy:     energyAfterMove,
 			breedTimer: sharkBreed,
 		}, worker, starts)
-		safeWrite(x, y, square{
+		SafeWrite(x, y, square{
 			typeId:     2,
 			energy:     starve,
 			breedTimer: sharkBreed,
@@ -343,7 +343,7 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 	return nil
 }
 
-// tileOfX returns which tile the current inputted x value exists on.
+// TileOfX returns which tile the current inputted x value exists on.
 //
 // Parameters:
 //
@@ -353,7 +353,7 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 // Returns:
 //
 //	int - coresponding with the tile the current x value exists on.
-func tileOfX(x int, starts []int) int {
+func TileOfX(x int, starts []int) int {
 	for i := 0; i < len(starts)-1; i++ {
 		if x >= starts[i] && x < starts[i+1] {
 			return i
@@ -362,7 +362,7 @@ func tileOfX(x int, starts []int) int {
 	return len(starts) - 1
 }
 
-// getTileStarts returns a slice of ints representing the x values of where each tile starts.
+// GetTileStarts returns a slice of ints representing the x values of where each tile starts.
 //
 // Parameters:
 //
@@ -371,7 +371,7 @@ func tileOfX(x int, starts []int) int {
 // Returns:
 //
 //	[]int - slice of ints representing the x values of where each tile starts.
-func getTileStarts(threads int) []int {
+func GetTileStarts(threads int) []int {
 	remainingWidth := width % threads
 	starts := make([]int, threads+1)
 	position := 0
@@ -387,22 +387,22 @@ func getTileStarts(threads int) []int {
 	return starts
 }
 
-// safeWrite checks whether or not the coordinates that are being written to are in the current tile (no lock will be needed)
+// SafeWrite checks whether or not the coordinates that are being written to are in the current tile (no lock will be needed)
 // or if it is in a different tile (a lock will be needed). It also checks the buffer to ensure only legal writes are allowed.
 //
 // Parameters:
 //
 //	x int - x coordinate of new square.
 //	y int - y coordinate of new square.
-//	square square - details of the square we want to safeWrite.
+//	square square - details of the square we want to SafeWrite.
 //	workerTile int - current tile/thread we are working on.
 //	starts []int - slice representing x values of where each tile starts.
 //
 // Returns:
 //
-//	bool - returns whether or not the safeWrite was successful.
-func safeWrite(x int, y int, square square, workerTile int, starts []int) bool {
-	targetTile := tileOfX(x, starts)
+//	bool - returns whether or not the SafeWrite was successful.
+func SafeWrite(x int, y int, square square, workerTile int, starts []int) bool {
+	targetTile := TileOfX(x, starts)
 	if targetTile == workerTile {
 		existing := buffer[x][y]
 		if existing.typeId == 0 {
@@ -438,13 +438,13 @@ func safeWrite(x int, y int, square square, workerTile int, starts []int) bool {
 	return false
 }
 
-// update splits tiles up based on number of threads, calls concurrentUpdate, waits for all routines to finish,
-// sets grid to be buffer, and zeros the buffer each frame.
+// Update splits tiles up based on number of threads, calls ConcurrentUpdate, waits for all routines to finish,
+// sets grid to be buffer, and zeros the buffer each Frame.
 //
 // Returns:
 //
 //	nil
-func update() error {
+func Update() error {
 	var wg sync.WaitGroup
 	for worker := 0; worker < threads; worker++ {
 		startX := starts[worker]
@@ -453,7 +453,7 @@ func update() error {
 			endX = width
 		}
 		wg.Add(1)
-		go concurrentUpdate(&wg, startX, endX, worker, starts)
+		go ConcurrentUpdate(&wg, startX, endX, worker, starts)
 	}
 
 	wg.Wait()
@@ -465,7 +465,7 @@ func update() error {
 	return nil
 }
 
-// concurrentUpdate iterates through a specified tile in the grid and detects whether each cell
+// ConcurrentUpdate iterates through a specified tile in the grid and detects whether each cell
 // contains a fish or a shark and calls the relevant function.
 //
 // Parameters:
@@ -475,26 +475,26 @@ func update() error {
 //	endX int - tile end.
 //	worker int - current tile number.
 //	starts []int - slice representing x values of where each tile starts.
-func concurrentUpdate(wg *sync.WaitGroup, startX int, endX int, worker int, starts []int) {
+func ConcurrentUpdate(wg *sync.WaitGroup, startX int, endX int, worker int, starts []int) {
 	defer wg.Done()
 
 	for x := startX; x < endX; x++ {
 		for y := 0; y < height; y++ {
 			if grid[x][y].typeId == 1 {
-				updateFish(x, y, worker, starts)
+				UpdateFish(x, y, worker, starts)
 			} else if grid[x][y].typeId == 2 {
-				updateSharks(x, y, worker, starts)
+				UpdateSharks(x, y, worker, starts)
 			}
 		}
 	}
 }
 
-// display draws the new grid after each update loop.
+// Display draws the new grid after each Update loop.
 //
 // Parameters:
 //
 //	window — the Ebiten image buffer used for drawing.
-func display(window *ebiten.Image) {
+func Display(window *ebiten.Image) {
 	window.Fill(blue)
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -512,8 +512,8 @@ func display(window *ebiten.Image) {
 
 }
 
-// main initializes the grid and starts the simulation loop.
-func main() {
+// RunConcurrent initializes the grid and starts the concurrent simulation loop.
+func RunConcurrent() {
 	coords := [][2]int{}
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -536,7 +536,7 @@ func main() {
 		grid[x][y].breedTimer = sharkBreed
 		grid[x][y].energy = starve
 	}
-	if err := ebiten.Run(frame, width, height, 1, "Wa-tor Simulation (Concurrent)"); err != nil {
+	if err := ebiten.Run(Frame, width, height, 1, "Wa-tor Simulation (Concurrent)"); err != nil {
 		log.Fatal(err)
 	}
 }

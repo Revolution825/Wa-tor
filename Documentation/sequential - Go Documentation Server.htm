@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html><script>var pmblock = 1.4;</script><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>watorsequential - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="sequential%20-%20Go%20Documentation%20Server_files/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="sequential%20-%20Go%20Documentation%20Server_files/jquery.js" defer="defer"></script>
+
+
+
+<script>var goVersion = "go1.25.3";</script>
+<script src="sequential%20-%20Go%20Documentation%20Server_files/godocs.js" defer="defer"></script>
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="http://localhost:6060/pkg/">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="http://localhost:6060/pkg/">GoDoc</a></div>
+<a href="#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+<form method="GET" action="/search">
+<div id="menu" style="min-width: 60px;">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required=""><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide" style="outline: 0px;" tabindex="-1">
+<div class="container">
+
+
+  <h1>
+    Package watorsequential
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "help/sequential"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				<p>package watorsequential implements a sequential Wa-Tor Simulation in Go
+
+				
+			</p></div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+				
+				<dd><a href="#Display">func Display(window *ebiten.Image)</a></dd>
+			
+				
+				<dd><a href="#Frame">func Frame(window *ebiten.Image) error</a></dd>
+			
+				
+				<dd><a href="#GatherFishSquares">func GatherFishSquares(x int, y int) [][2]int</a></dd>
+			
+				
+				<dd><a href="#GatherFreeSquares">func GatherFreeSquares(x int, y int) [][2]int</a></dd>
+			
+				
+				<dd><a href="#RunSequential">func RunSequential()</a></dd>
+			
+				
+				<dd><a href="#Update">func Update() error</a></dd>
+			
+				
+				<dd><a href="#UpdateFish">func UpdateFish(x int, y int) error</a></dd>
+			
+				
+				<dd><a href="#UpdateSharks">func UpdateSharks(x int, y int) error</a></dd>
+			
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:6060/src/help/sequential/sequential.go">sequential.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+			
+			
+			<h2 id="Display">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=10344:10378#L315">Display</a>
+				<a class="permalink" href="#Display">¶</a>
+				
+				
+			</h2>
+			<pre>func Display(window *<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/">ebiten</a>.<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/#Image">Image</a>)</pre>
+			<p>Display draws the new grid after each Update loop
+</p><p>Parameters:
+</p><pre>window — the Ebiten image buffer used for drawing.
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="Frame">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=2862:2900#L84">Frame</a>
+				<a class="permalink" href="#Frame">¶</a>
+				
+				
+			</h2>
+			<pre>func Frame(window *<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/">ebiten</a>.<a href="http://localhost:6060/pkg/github.com/hajimehoshi/ebiten/#Image">Image</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>Frame updates the simulation each Frame by calling the Update() function and the Display() function
+</p><p>Parameters:
+</p><pre>window — the Ebiten image buffer used for drawing.
+</pre>
+<p>Returns:
+</p><pre>error - if the Update step fails, nil otherwise
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="GatherFishSquares">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=4712:4757#L149">GatherFishSquares</a>
+				<a class="permalink" href="#GatherFishSquares">¶</a>
+				
+				
+			</h2>
+			<pre>func GatherFishSquares(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>) [][2]<a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>GatherFishSquares takes in the coordinates of a particular square and returns a slice containing
+the coordinates of any squares containing fish to the north, south, east and west of the inputted
+coordinates
+</p><p>Parameters:
+</p><pre>x - x coordinate of current square
+y - y coordinate of current square
+</pre>
+<p>Returns:
+</p><pre>[][2]int - containing the coordinates of all fish squares, if there are no fish squares returns empty slice
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="GatherFreeSquares">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=3659:3704#L116">GatherFreeSquares</a>
+				<a class="permalink" href="#GatherFreeSquares">¶</a>
+				
+				
+			</h2>
+			<pre>func GatherFreeSquares(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>) [][2]<a href="http://localhost:6060/pkg/builtin/#int">int</a></pre>
+			<p>GatherFreeSquares takes in the coordinates of a particular square and returns a slice containing
+the coordinates of any empty squares to the north, south, east and west of the inputted coordinates
+</p><p>Parameters:
+</p><pre>x - x coordinate of current square
+y - y coordinate of current square
+</pre>
+<p>Returns:
+</p><pre>[][2]int - containing the coordinates of all free squares, if there are no free squares returns empty slice
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="RunSequential">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=10819:10839#L334">RunSequential</a>
+				<a class="permalink" href="#RunSequential">¶</a>
+				
+				
+			</h2>
+			<pre>func RunSequential()</pre>
+			<p>RunSequential initializes the grid and starts the sequential simulation loop
+
+			
+			
+
+		
+			
+			
+			</p><h2 id="Update">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=9849:9868#L288">Update</a>
+				<a class="permalink" href="#Update">¶</a>
+				
+				
+			</h2>
+			<pre>func Update() <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>Update iterates through the grid (which represents the current state of the world), detects whether each cell
+contains a fish or a shark and calls the relevant function. When the main Update loop is complete it sets grid
+to be buffer (the now updated state of the world) and zeros the buffer.
+</p><p>Returns:
+</p><pre>nil
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="UpdateFish">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=6064:6099#L185">UpdateFish</a>
+				<a class="permalink" href="#UpdateFish">¶</a>
+				
+				
+			</h2>
+			<pre>func UpdateFish(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>UpdateFish takes in the coordinates of a particular fish. It checks if this fish has been eaten yet
+in the buffer. If not, GatherFreeSquares is called. if there are free squares, one is picked at random and
+the buffer is checked to ensure that a different fish has not moved to the desired square already. If the
+empty square is still free in the buffer, the fish is written to that square. otherwise the fish stays put.
+UpdateFish also handles breeding by checking the moved fishes' breedtimer. if it is &lt;=0 a new fish is
+placed in it's old place and both fishes' breedTimers are reset.
+</p><p>Parameters:
+</p><pre>x - x coordinate of current fish square
+y - y coordinate of current fish square
+</pre>
+<p>Returns:
+</p><pre>nil
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="UpdateSharks">func <a href="http://localhost:6060/src/help/sequential/sequential.go?s=7722:7759#L229">UpdateSharks</a>
+				<a class="permalink" href="#UpdateSharks">¶</a>
+				
+				
+			</h2>
+			<pre>func UpdateSharks(x <a href="http://localhost:6060/pkg/builtin/#int">int</a>, y <a href="http://localhost:6060/pkg/builtin/#int">int</a>) <a href="http://localhost:6060/pkg/builtin/#error">error</a></pre>
+			<p>UpdateSharks takes in the coordinates of a particular shark. GatherFishSquares and GatherFreeSquares is called.
+if there are adjacent fish squares one is picked at random and the buffer is checked to ensure that the fish
+has not already been eaten by a different shark. If a shark cannot move to the desired fish square it attempts
+to move to a free square. If there are no free squares the shark stays put. A shark loses 1 energy per turn and
+gains a specified amount of energy upon eating a fish. If a sharks energy is &lt;=0 it disappears. when a sharks
+breedtimer is &lt;=0 a new shark is placed at its old position and both sharks' breedTimers reset.
+</p><p>Parameters:
+</p><pre>x - x coordinate of current shark square
+y - y coordinate of current shark square
+</pre>
+<p>Returns:
+</p><pre>nil
+</pre>
+
+			
+			
+
+		
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.25.3.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:6060/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

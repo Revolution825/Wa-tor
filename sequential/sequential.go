@@ -15,8 +15,8 @@
 
 // Sequential Wa-Tor Simulation in Go
 
-// package main implements a sequential Wa-Tor Simulation in Go
-package main
+// package watorsequential implements a sequential Wa-Tor Simulation in Go
+package watorsequential
 
 import (
 	"image/color"
@@ -82,7 +82,7 @@ var chronon int = 0
 // start is used for tracking elapsed time for measuring performance
 var start = time.Now()
 
-// frame updates the simulation each frame by calling the update() function and the display() function
+// Frame updates the simulation each Frame by calling the Update() function and the Display() function
 //
 // Parameters:
 //
@@ -90,18 +90,18 @@ var start = time.Now()
 //
 // Returns:
 //
-//	error - if the update step fails, nil otherwise
-func frame(window *ebiten.Image) error {
+//	error - if the Update step fails, nil otherwise
+func Frame(window *ebiten.Image) error {
 	count++
 	chronon++
 	var err error = nil
 
 	if count == 1 {
-		err = update()
+		err = Update()
 		count = 0
 	}
 	if !ebiten.IsDrawingSkipped() {
-		display(window)
+		Display(window)
 	}
 	if chronon == 1000 {
 		var elapsed = time.Since(start)
@@ -112,7 +112,7 @@ func frame(window *ebiten.Image) error {
 	return err
 }
 
-// gatherFreeSquares takes in the coordinates of a particular square and returns a slice containing
+// GatherFreeSquares takes in the coordinates of a particular square and returns a slice containing
 // the coordinates of any empty squares to the north, south, east and west of the inputted coordinates
 //
 // Parameters:
@@ -123,7 +123,7 @@ func frame(window *ebiten.Image) error {
 // Returns:
 //
 //	[][2]int - containing the coordinates of all free squares, if there are no free squares returns empty slice
-func gatherFreeSquares(x int, y int) [][2]int {
+func GatherFreeSquares(x int, y int) [][2]int {
 	freeSquares := [][2]int{}
 	leftX := (x - 1 + width) % width
 	rightX := (x + 1) % width
@@ -144,7 +144,7 @@ func gatherFreeSquares(x int, y int) [][2]int {
 	return freeSquares
 }
 
-// gatherFishSquares takes in the coordinates of a particular square and returns a slice containing
+// GatherFishSquares takes in the coordinates of a particular square and returns a slice containing
 // the coordinates of any squares containing fish to the north, south, east and west of the inputted
 // coordinates
 //
@@ -156,7 +156,7 @@ func gatherFreeSquares(x int, y int) [][2]int {
 // Returns:
 //
 //	[][2]int - containing the coordinates of all fish squares, if there are no fish squares returns empty slice
-func gatherFishSquares(x int, y int) [][2]int {
+func GatherFishSquares(x int, y int) [][2]int {
 	fishSquares := [][2]int{}
 	leftX := (x - 1 + width) % width
 	rightX := (x + 1) % width
@@ -177,11 +177,11 @@ func gatherFishSquares(x int, y int) [][2]int {
 	return fishSquares
 }
 
-// updateFish takes in the coordinates of a particular fish. It checks if this fish has been eaten yet
-// in the buffer. If not, gatherFreeSquares is called. if there are free squares, one is picked at random and
+// UpdateFish takes in the coordinates of a particular fish. It checks if this fish has been eaten yet
+// in the buffer. If not, GatherFreeSquares is called. if there are free squares, one is picked at random and
 // the buffer is checked to ensure that a different fish has not moved to the desired square already. If the
 // empty square is still free in the buffer, the fish is written to that square. otherwise the fish stays put.
-// updateFish also handles breeding by checking the moved fishes' breedtimer. if it is <=0 a new fish is
+// UpdateFish also handles breeding by checking the moved fishes' breedtimer. if it is <=0 a new fish is
 // placed in it's old place and both fishes' breedTimers are reset.
 //
 // Parameters:
@@ -192,11 +192,11 @@ func gatherFishSquares(x int, y int) [][2]int {
 // Returns:
 //
 //	nil
-func updateFish(x int, y int) error {
+func UpdateFish(x int, y int) error {
 	if buffer[x][y].typeId == 2 {
 		return nil
 	}
-	freeSquares := gatherFreeSquares(x, y)
+	freeSquares := GatherFreeSquares(x, y)
 	newX, newY := x, y
 	if len(freeSquares) > 0 {
 		newPosition := rand.IntN(len(freeSquares))
@@ -221,7 +221,7 @@ func updateFish(x int, y int) error {
 	return nil
 }
 
-// updateSharks takes in the coordinates of a particular shark. gatherFishSquares and gatherFreeSquares is called.
+// UpdateSharks takes in the coordinates of a particular shark. GatherFishSquares and GatherFreeSquares is called.
 // if there are adjacent fish squares one is picked at random and the buffer is checked to ensure that the fish
 // has not already been eaten by a different shark. If a shark cannot move to the desired fish square it attempts
 // to move to a free square. If there are no free squares the shark stays put. A shark loses 1 energy per turn and
@@ -236,9 +236,9 @@ func updateFish(x int, y int) error {
 // Returns:
 //
 //	nil
-func updateSharks(x int, y int) error {
-	freeSquares := gatherFreeSquares(x, y)
-	fishSquares := gatherFishSquares(x, y)
+func UpdateSharks(x int, y int) error {
+	freeSquares := GatherFreeSquares(x, y)
+	fishSquares := GatherFishSquares(x, y)
 	newX, newY := x, y
 	if len(fishSquares) > 0 {
 		newPosition := rand.IntN(len(fishSquares))
@@ -288,20 +288,20 @@ func updateSharks(x int, y int) error {
 	return nil
 }
 
-// update iterates through the grid (which represents the current state of the world), detects whether each cell
-// contains a fish or a shark and calls the relevant function. When the main update loop is complete it sets grid
+// Update iterates through the grid (which represents the current state of the world), detects whether each cell
+// contains a fish or a shark and calls the relevant function. When the main Update loop is complete it sets grid
 // to be buffer (the now updated state of the world) and zeros the buffer.
 //
 // Returns:
 //
 //	nil
-func update() error {
+func Update() error {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 			if grid[x][y].typeId == 1 {
-				updateFish(x, y)
+				UpdateFish(x, y)
 			} else if grid[x][y].typeId == 2 {
-				updateSharks(x, y)
+				UpdateSharks(x, y)
 			}
 		}
 	}
@@ -317,12 +317,12 @@ func update() error {
 	return nil
 }
 
-// display draws the new grid after each update loop
+// Display draws the new grid after each Update loop
 //
 // Parameters:
 //
 //	window — the Ebiten image buffer used for drawing.
-func display(window *ebiten.Image) {
+func Display(window *ebiten.Image) {
 	window.Fill(blue)
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -340,8 +340,8 @@ func display(window *ebiten.Image) {
 
 }
 
-// main initializes the grid and starts the simulation loop
-func main() {
+// RunSequential initializes the grid and starts the sequential simulation loop
+func RunSequential() {
 	coords := [][2]int{}
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -364,7 +364,7 @@ func main() {
 		grid[x][y].breedTimer = sharkBreed
 		grid[x][y].energy = starve
 	}
-	if err := ebiten.Run(frame, width, height, 1, "Wa-tor Simulation (Sequential)"); err != nil {
+	if err := ebiten.Run(Frame, width, height, 1, "Wa-tor Simulation (Sequential)"); err != nil {
 		log.Fatal(err)
 	}
 }
