@@ -44,10 +44,9 @@ var sharkBreed int = 10
 var starve int = 4
 var energyGain = 2
 var grid [width][height]square = [width][height]square{}
-var threads int = 1
+var threads int = 8
 
 var tileWidth = width / threads
-var remainingWidth = width % threads
 var tileLocks = make([]sync.Mutex, threads)
 var starts = getTileStarts(threads)
 
@@ -273,6 +272,7 @@ func updateSharks(x int, y int, worker int, starts []int) error {
 }
 
 func tileOfX(x int, starts []int) int {
+	// Returns which tile x is in
 	for i := 0; i < len(starts)-1; i++ {
 		if x >= starts[i] && x < starts[i+1] {
 			return i
