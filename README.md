@@ -2,14 +2,14 @@
 
 Author: Diarmuid O'Neill (C00282898@setu.ie) <br />
 Date: 26/11/2025 <br />
-Description: <br />
+Brief Description: <br />
 This repository demonstrates sequential and concurrent Wa-Tor simulations in GO language (see description below). The goal of this project is to demonstrate tiling, write thread-safe concurrent code, and measure execution speedup as the number of threads increases (see excel for results). This project was created for the final year concurrent development module of the Software Development course at SETU Carlow. To run the simulations, navigate to the main_sequential or main_concurrent directories (depending on which version you wish to run) and run the programs from there.
 
 GitHub Link: https://github.com/Revolution825/Wa-tor.git
 
 # Description
 
-This is an excerpt from Wikipedia. For the full description of Wa-Tor see: https://en.wikipedia.org/wiki/Wa-Tor.
+This is an excerpt from Wikipedia. For the full description of Wa-Tor see: https://en.wikipedia.org/wiki/Wa-Tor. <br />
 Time passes in discrete jumps, which I shall call chronons. During each chronon a fish or shark may
 move north, east, south or west to an adjacent point, provided the point is not already occupied by a
 member of its own species. A random-number generator makes the actual choice. For a fish the
